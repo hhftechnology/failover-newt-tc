@@ -1,0 +1,99 @@
+name: Docker Image CI/CD
+
+# Trigger the workflow on push to main branch and when manually triggered
+on:
+  push:
+    branches: [ "main" ]
+    # Only trigger on changes to relevant files
+    paths:
+      - 'Dockerfile'
+      - 'scripts/**'
+      - 'config/**'
+      - 'web/**'
+      - '.github/workflows/**'
+  workflow_dispatch:  # Allows manual triggering
+
+# Environment variables used across jobs
+env:
+  # Change these to match your image names
+  DOCKERHUB_IMAGE_NAME: hhftechnology/failover-newt-tc
+  GITHUB_IMAGE_NAME: ${{ github.repository_owner }}/failover-newt-tc
+  
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    # Add permissions needed for GitHub Packages
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      # Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      # Set up QEMU for multi-platform builds
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      # Login to DockerHub
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      # Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Get current date for image tags
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+      
+      # Build and push Docker image
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_IMAGE_NAME }}:latest
+            ${{ env.DOCKERHUB_IMAGE_NAME }}:${{ steps.date.outputs.date }}
+            ghcr.io/${{ env.GITHUB_IMAGE_NAME }}:latest
+            ghcr.io/${{ env.GITHUB_IMAGE_NAME }}:${{ steps.date.outputs.date }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Add build arguments if needed
+          build-args: |
+            BUILD_DATE=${{ steps.date.outputs.date }}
+            VERSION=${{ github.sha }}
+      
+      # Sync README to DockerHub
+      - name: Sync README to DockerHub
+        uses: ms-jpq/sync-dockerhub-readme@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.DOCKERHUB_IMAGE_NAME }}
+          readme: "./README.md"
+      
+      # Update Docker Hub Description
+      - name: Update Docker Hub Description
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.DOCKERHUB_IMAGE_NAME }}
+          short-description: "Automatic failover gateway between Newt and Tailscale"
+          readme-filepath: ./README.md

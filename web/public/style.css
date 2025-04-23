@@ -1,0 +1,206 @@
+/* Dashboard Styles */
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --neutral-color: #95a5a6;
+    --dark-color: #2c3e50;
+    --light-color: #ecf0f1;
+    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --border-radius: 6px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+header h1 {
+    color: var(--dark-color);
+    font-size: 24px;
+}
+
+.system-info {
+    display: flex;
+    gap: 20px;
+}
+
+.info-box {
+    background-color: var(--light-color);
+    padding: 8px 15px;
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    display: flex;
+    gap: 8px;
+}
+
+.status-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.status-box {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+}
+
+.status-box h2 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+    font-size: 18px;
+}
+
+.status-indicator {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+}
+
+.service-details p {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.health-indicators {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.health-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--light-color);
+    border-radius: var(--border-radius);
+}
+
+.health-status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-box {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+}
+
+.chart-box h2 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+    font-size: 18px;
+}
+
+.log-container {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 30px;
+}
+
+.log-container h2 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+    font-size: 18px;
+}
+
+.logs {
+    height: 300px;
+    overflow-y: auto;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    border-radius: var(--border-radius);
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Status Colors */
+.status-up {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.status-down {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.status-warning {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.status-unknown {
+    background-color: var(--neutral-color);
+    color: white;
+}
+
+.status-standby {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .system-info {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+}

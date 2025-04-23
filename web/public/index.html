@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newt-Tailscale Failover Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Newt-Tailscale Failover Dashboard</h1>
+            <div class="system-info">
+                <div class="info-box">
+                    <span>CPU:</span>
+                    <span id="cpu-usage">Loading...</span>
+                </div>
+                <div class="info-box">
+                    <span>Memory:</span>
+                    <span id="memory-usage">Loading...</span>
+                </div>
+                <div class="info-box">
+                    <span>Uptime:</span>
+                    <span id="uptime">Loading...</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="status-panel">
+            <div class="status-box">
+                <h2>Active Service</h2>
+                <div id="active-service-status" class="status-indicator">Unknown</div>
+                <div class="service-details">
+                    <p>Primary: <span id="primary-service">Loading...</span></p>
+                    <p>Failover Active: <span id="failover-active">No</span></p>
+                    <p>Last Failover: <span id="last-failover">Never</span></p>
+                </div>
+            </div>
+
+            <div class="status-box">
+                <h2>Service Health</h2>
+                <div class="health-indicators">
+                    <div class="health-item">
+                        <span>Newt:</span>
+                        <span id="newt-health" class="health-status">Unknown</span>
+                    </div>
+                    <div class="health-item">
+                        <span>Tailscale:</span>
+                        <span id="tailscale-health" class="health-status">Unknown</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-box">
+                <h2>Service Availability</h2>
+                <canvas id="availability-chart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h2>Failover Events</h2>
+                <canvas id="failover-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="log-container">
+            <h2>Recent Logs</h2>
+            <div id="log-entries" class="logs"></div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

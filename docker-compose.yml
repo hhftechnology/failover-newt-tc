@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  failover-gateway:
+    build:
+      context: .
+      args:
+        NEWT_VERSION: "1.1.0"
+        TAILSCALE_VERSION: "1.80.3"
+    cap_add:
+      - NET_ADMIN
+    environment:
+      # Core Configuration
+      - ENABLE_FAILOVER=true
+      - FAILOVER_MODE=immediate
+      - PRIMARY_SERVICE=newt
+      
+      # Health Check Configuration
+      - HEALTH_CHECK_INTERVAL=10
+      - HEALTH_CHECK_TIMEOUT=5
+      - HEALTH_CHECK_FAILURES_THRESHOLD=3
+      - HEALTH_CHECK_RECOVERY_THRESHOLD=5
+      
+      # Newt Configuration
+      - NEWT_ID=${NEWT_ID}
+      - NEWT_SECRET=${NEWT_SECRET}
+      - PANGOLIN_ENDPOINT=${PANGOLIN_ENDPOINT}
+      
+      # Tailscale Configuration
+      - TAILSCALE_AUTH_KEY=${TAILSCALE_AUTH_KEY}
+      - TAILSCALE_HOSTNAME=failover-gateway
+      - TARGET_PORTS=80,3000,8080
+      - TAILSCALE_ACCEPT_DNS=true
+      - TAILSCALE_ACCEPT_ROUTES=false
+      - TAILSCALE_ADVERTISE_EXIT_NODE=false
+      # IMPORTANT: Must advertise the same subnet that Newt connects to
+      - TAILSCALE_ADVERTISE_ROUTES=${TAILSCALE_ADVERTISE_ROUTES:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      
+      # Notification Settings (optional)
+      - ENABLE_NOTIFICATIONS=false
+      #- NOTIFICATION_WEBHOOK=https://your-webhook-url.com
+    volumes:
+      - ./data/tailscale:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - "9090:9090" # Status dashboard
+    restart: unless-stopped
+    networks:
+      - frontend
+
+  webapp:
+    image: nginx:alpine
+    expose:
+      - "80"
+    restart: unless-stopped
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    driver: bridge
