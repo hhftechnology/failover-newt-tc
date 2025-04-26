@@ -174,7 +174,7 @@ The failover gateway follows this architecture:
 
 ## Monitoring Dashboard
 
-A simple monitoring dashboard is available at `http://[gateway-ip]:9090/status` showing:
+A simple monitoring dashboard is available at `http://[gateway-ip]:9095` showing:
 
 - Current active service (Newt or Tailscale)
 - Health status of both services
