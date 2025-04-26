@@ -1,14 +1,15 @@
-version: '3'
-
 services:
   failover-gateway:
-    build:
-      context: .
-      args:
-        NEWT_VERSION: "1.1.0"
-        TAILSCALE_VERSION: "1.80.3"
+    image: hhftechnology/failover-newt-tc:latest
+    # ADD THESE PERMISSION SETTINGS
+    privileged: true  # Gives full access to host devices - CRITICAL for TUN
     cap_add:
       - NET_ADMIN
+      - SYS_MODULE
+    security_opt:
+      - apparmor:unconfined  # Disable AppArmor restrictions
+    sysctls:
+      - net.ipv4.ip_forward=1  # Enable IP forwarding
     environment:
       # Core Configuration
       - ENABLE_FAILOVER=true
@@ -25,6 +26,7 @@ services:
       - NEWT_ID=${NEWT_ID}
       - NEWT_SECRET=${NEWT_SECRET}
       - PANGOLIN_ENDPOINT=${PANGOLIN_ENDPOINT}
+      - ENABLE_NEWT=true  # ADD THIS LINE - Explicit enable for Newt
       
       # Tailscale Configuration
       - TAILSCALE_AUTH_KEY=${TAILSCALE_AUTH_KEY}
@@ -41,16 +43,26 @@ services:
       #- NOTIFICATION_WEBHOOK=https://your-webhook-url.com
     volumes:
       - ./data/tailscale:/var/lib/tailscale
+      # ADD THIS LINE - Mount host kernel modules
+      - /lib/modules:/lib/modules:ro
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      - "9090:9090" # Status dashboard
+      - "9095:9090" # Status dashboard
     restart: unless-stopped
     networks:
       - frontend
+    
+    # ADD THIS HEALTHCHECK
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   webapp:
     image: nginx:alpine
+    container_name: app  # ADD THIS LINE - Fixed name for DNS resolution
     expose:
       - "80"
     restart: unless-stopped

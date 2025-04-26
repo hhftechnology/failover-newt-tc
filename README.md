@@ -2,6 +2,8 @@
 
 This project provides an automatic failover solution between Newt and Tailscale. If the Newt tunnel fails, traffic is automatically redirected to Tailscale without interruption.
 
+<img src="images/image.png" alt="Preview"/>
+
 ## Features
 
 - **Automatic Failover**: Seamlessly switches to Tailscale when Newt becomes unavailable
@@ -83,7 +85,7 @@ NOTIFICATION_WEBHOOK=https://your-webhook-url.com
 version: '3'
 services:
   failover-gateway:
-    image: hhftechnology/newt-tailscale-failover:latest
+    image: hhftechnology/failover-newt-tc:latest:latest
     cap_add:
       - NET_ADMIN
     environment:
@@ -129,7 +131,7 @@ networks:
 version: '3'
 services:
   failover-gateway:
-    image: hhftechnology/newt-tailscale-failover:latest
+    image: hhftechnology/failover-newt-tc:latest:latest
     cap_add:
       - NET_ADMIN
     environment:
