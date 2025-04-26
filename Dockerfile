@@ -26,7 +26,9 @@ RUN apk add --no-cache \
     sqlite-dev
 
 # Install Node.js packages for monitoring dashboard
-RUN npm install -g express express-ws ws
+WORKDIR /opt/failover-gateway
+RUN npm init -y && \
+    npm install express express-ws ws chart.js
 
 # Install Tailscale
 RUN curl -sL "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_${TARGETARCH}.tgz" \
@@ -39,9 +41,6 @@ RUN ARCH=$([ "${TARGETARCH}" = "amd64" ] && echo "amd64" || echo "arm64") && \
     curl -sL "https://github.com/fosrl/newt/releases/download/${NEWT_VERSION}/newt_linux_${ARCH}" \
     -o /usr/local/bin/newt && \
     chmod +x /usr/local/bin/newt
-
-# Install monitoring dashboard dependencies
-RUN npm install -g express express-ws ws
 
 # Create necessary directories
 RUN mkdir -p \
@@ -61,7 +60,10 @@ COPY scripts/failover-monitor.sh /usr/local/bin/failover-monitor.sh
 COPY scripts/failover-switch.sh /usr/local/bin/failover-switch.sh
 COPY scripts/health-check.sh /usr/local/bin/health-check.sh
 COPY scripts/notification.sh /usr/local/bin/notification.sh
-COPY web/dashboard.js /opt/failover-gateway/dashboard.js
+COPY scripts/bootstrap.sh /usr/local/bin/bootstrap.sh
+
+# Copy web files
+COPY web/dashboard-server.js /opt/failover-gateway/dashboard-server.js
 COPY web/public/ /opt/failover-gateway/public/
 
 # Set execute permissions for scripts
@@ -72,7 +74,8 @@ RUN chmod +x \
     /usr/local/bin/failover-monitor.sh \
     /usr/local/bin/failover-switch.sh \
     /usr/local/bin/health-check.sh \
-    /usr/local/bin/notification.sh
+    /usr/local/bin/notification.sh \
+    /usr/local/bin/bootstrap.sh
 
 # Set environment variables
 ENV NO_AUTOUPDATE=true \
