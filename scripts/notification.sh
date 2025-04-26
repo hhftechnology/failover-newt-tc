@@ -67,11 +67,11 @@ if [ -f "$STATUS_FILE" ]; then
     if command -v jq >/dev/null 2>&1; then
         if jq -e '.notifications' "$STATUS_FILE" >/dev/null 2>&1; then
             # notifications array exists, append to it
-            jq --argjson notif "$NOTIFICATION" '.notifications += [$notif]' "$STATUS_FILE" > "$STATUS_FILE.tmp" && 
+            jq --arg notif "$NOTIFICATION" '.notifications += [$notif | fromjson]' "$STATUS_FILE" > "$STATUS_FILE.tmp" && 
             mv "$STATUS_FILE.tmp" "$STATUS_FILE"
         else
             # notifications array doesn't exist, create it
-            jq --argjson notif "$NOTIFICATION" '. + {notifications: [$notif]}' "$STATUS_FILE" > "$STATUS_FILE.tmp" && 
+            jq --arg notif "$NOTIFICATION" '. + {notifications: [$notif | fromjson]}' "$STATUS_FILE" > "$STATUS_FILE.tmp" && 
             mv "$STATUS_FILE.tmp" "$STATUS_FILE"
         fi
     fi

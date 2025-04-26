@@ -39,13 +39,20 @@ update_status() {
     local newt_health="$1"
     local tailscale_health="$2"
     
+    # Create a temporary JSON object with the failover status
+    local failover_json="false"
+    if [ "$FAILOVER_ACTIVE" = "true" ]; then
+        failover_json="true"
+    fi
+    
+    # Use proper jq syntax without the invalid --arb option
     jq --arg active "$ACTIVE_SERVICE" \
        --arg primary "$PRIMARY_SERVICE" \
-       --arb failover $FAILOVER_ACTIVE \
+       --arg failover "$failover_json" \
        --arg last "$LAST_FAILOVER_TIME" \
        --arg newt_health "$newt_health" \
        --arg tailscale_health "$tailscale_health" \
-       '.active_service = $active | .primary_service = $primary | .failover_active = $failover | .last_failover = $last | .health.newt = $newt_health | .health.tailscale = $tailscale_health' \
+       '.active_service = $active | .primary_service = $primary | .failover_active = ($failover == "true") | .last_failover = $last | .health.newt = $newt_health | .health.tailscale = $tailscale_health' \
        $STATUS_FILE > $STATUS_FILE.tmp && mv $STATUS_FILE.tmp $STATUS_FILE
 }
 
