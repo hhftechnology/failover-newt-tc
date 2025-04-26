@@ -22,7 +22,11 @@ RUN apk add --no-cache \
     procps \
     wget \
     nodejs \
-    npm
+    npm \
+    sqlite-dev
+
+# Install Node.js packages for monitoring dashboard
+RUN npm install -g express express-ws ws
 
 # Install Tailscale
 RUN curl -sL "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_${TARGETARCH}.tgz" \
