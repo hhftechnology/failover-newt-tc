@@ -13,20 +13,23 @@ check_newt() {
         return 1
     fi
     
-    # Check if Newt has a working connection
-    # This will need to be customized based on how Newt can be checked
-    # For example, we could check if a test request can be made through Newt
-    
-    # Check if we can connect to a test endpoint via Newt
-    # This is a simplified example - actual implementation will depend on Newt's behavior
-    # We'll try to connect to the app service via Newt
-    if nc -z -w "$TIMEOUT" localhost 80 >/dev/null 2>&1; then
-        # If we can connect to port 80, assume Newt is working
+    # Check Newt tunnel connectivity by pinging the gateway
+    # Using the same IP that Newt itself is trying to ping (100.89.128.1)
+    if ping -c 1 -W "$TIMEOUT" 100.89.128.1 >/dev/null 2>&1; then
+        # If we can ping the gateway, the tunnel is working
         return 0
-    else
-        echo "Cannot connect to app service via Newt"
-        return 1
     fi
+    
+    # Alternatively, try to connect to a service via the Newt tunnel
+    # This depends on your network setup and what's accessible through Newt
+    # Replace TARGET_IP with an actual IP on your private network
+    local TARGET_IP=$(getent hosts app | awk '{ print $1 }')
+    if [ -n "$TARGET_IP" ] && nc -z -w "$TIMEOUT" "$TARGET_IP" 80 >/dev/null 2>&1; then
+        return 0
+    fi
+    
+    echo "Cannot establish connectivity through Newt tunnel"
+    return 1
 }
 
 # Function to check Tailscale health

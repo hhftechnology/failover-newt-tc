@@ -6,11 +6,15 @@
     <title>Newt-Tailscale Failover Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Optional: Add Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Newt-Tailscale Failover Dashboard</h1>
+            <h1>Newt-Tailscale Failover Gateway</h1>
             <div class="system-info">
                 <div class="info-box">
                     <span>CPU:</span>
@@ -27,46 +31,238 @@
             </div>
         </header>
 
-        <div class="status-panel">
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-button active" data-tab="overview">Overview</button>
+            <button class="tab-button" data-tab="details">Service Details</button>
+            <button class="tab-button" data-tab="logs">Logs</button>
+            <button class="tab-button" data-tab="settings">Settings</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <!-- Control buttons -->
+            <div class="control-buttons">
+                <button id="refresh-button" class="control-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 2v6h-6"></path>
+                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                        <path d="M3 22v-6h6"></path>
+                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                    </svg>
+                    Refresh Data
+                </button>
+                <button id="manual-failover-button" class="control-button warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3"></path>
+                        <path d="M21 8h-3a2 2 0 0 1-2-2V3"></path>
+                        <path d="M3 16h3a2 2 0 0 1 2 2v3"></path>
+                        <path d="M16 21v-3a2 2 0 0 1 2-2h3"></path>
+                    </svg>
+                    Manual Failover
+                </button>
+            </div>
+
+            <div class="status-panel">
+                <div class="status-box">
+                    <h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        </svg>
+                        Active Service
+                    </h2>
+                    <div id="active-service-status" class="status-indicator">Loading...</div>
+                    <div class="service-details">
+                        <p><span>Primary:</span> <span id="primary-service">Loading...</span></p>
+                        <p><span>Failover Active:</span> <span id="failover-active">No</span></p>
+                        <p><span>Last Failover:</span> <span id="last-failover">Never</span></p>
+                    </div>
+                </div>
+
+                <div class="status-box">
+                    <h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+                            <line x1="16" y1="8" x2="2" y2="22"></line>
+                            <line x1="17.5" y1="15" x2="9" y2="15"></line>
+                        </svg>
+                        Service Health
+                    </h2>
+                    <div class="health-indicators">
+                        <div class="health-item">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                                    <polyline points="17 2 12 7 7 2"></polyline>
+                                </svg>
+                                Newt
+                            </span>
+                            <span id="newt-health" class="health-status status-unknown">Unknown</span>
+                        </div>
+                        <div class="health-item">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                                </svg>
+                                Tailscale
+                            </span>
+                            <span id="tailscale-health" class="health-status status-unknown">Unknown</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-box">
+                    <h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        Service Availability
+                    </h2>
+                    <canvas id="availability-chart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Failover Events (Last 24h)
+                    </h2>
+                    <canvas id="failover-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Tab -->
+        <div id="details-tab" class="tab-content">
             <div class="status-box">
-                <h2>Active Service</h2>
-                <div id="active-service-status" class="status-indicator">Unknown</div>
+                <h2>Network Configuration</h2>
                 <div class="service-details">
-                    <p>Primary: <span id="primary-service">Loading...</span></p>
-                    <p>Failover Active: <span id="failover-active">No</span></p>
-                    <p>Last Failover: <span id="last-failover">Never</span></p>
+                    <p><span>Primary Service:</span> <span id="detail-primary-service">Loading...</span></p>
+                    <p><span>Failover Mode:</span> <span id="detail-failover-mode">Loading...</span></p>
+                    <p><span>Health Check Interval:</span> <span id="detail-health-check-interval">Loading...</span></p>
+                    <p><span>Failure Threshold:</span> <span id="detail-health-check-failures">Loading...</span></p>
+                    <p><span>Recovery Threshold:</span> <span id="detail-health-check-recoveries">Loading...</span></p>
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <div class="status-box">
+                    <h2>Newt Details</h2>
+                    <div class="service-details">
+                        <p><span>Status:</span> <span id="detail-newt-status">Loading...</span></p>
+                        <p><span>Connected Since:</span> <span id="detail-newt-connected-since">Loading...</span></p>
+                        <p><span>Pangolin Endpoint:</span> <span id="detail-newt-endpoint">Loading...</span></p>
+                    </div>
+                </div>
+
+                <div class="status-box">
+                    <h2>Tailscale Details</h2>
+                    <div class="service-details">
+                        <p><span>Status:</span> <span id="detail-tailscale-status">Loading...</span></p>
+                        <p><span>Connected Since:</span> <span id="detail-tailscale-connected-since">Loading...</span></p>
+                        <p><span>Advertised Routes:</span> <span id="detail-tailscale-routes">Loading...</span></p>
+                    </div>
                 </div>
             </div>
 
             <div class="status-box">
-                <h2>Service Health</h2>
-                <div class="health-indicators">
-                    <div class="health-item">
-                        <span>Newt:</span>
-                        <span id="newt-health" class="health-status">Unknown</span>
-                    </div>
-                    <div class="health-item">
-                        <span>Tailscale:</span>
-                        <span id="tailscale-health" class="health-status">Unknown</span>
-                    </div>
+                <h2>Port Forwarding</h2>
+                <div id="port-forwarding-rules" class="service-details">
+                    <p>Loading port forwarding rules...</p>
                 </div>
             </div>
         </div>
 
-        <div class="charts-container">
-            <div class="chart-box">
-                <h2>Service Availability</h2>
-                <canvas id="availability-chart"></canvas>
-            </div>
-            <div class="chart-box">
-                <h2>Failover Events</h2>
-                <canvas id="failover-chart"></canvas>
+        <!-- Logs Tab -->
+        <div id="logs-tab" class="tab-content">
+            <div class="log-container">
+                <h2>
+                    System Logs
+                    <div class="log-controls">
+                        <button class="log-level-filter active" data-level="all">All</button>
+                        <button class="log-level-filter" data-level="info">Info</button>
+                        <button class="log-level-filter" data-level="warning">Warnings</button>
+                        <button class="log-level-filter" data-level="error">Errors</button>
+                    </div>
+                </h2>
+                <div id="log-entries" class="logs"></div>
             </div>
         </div>
 
-        <div class="log-container">
-            <h2>Recent Logs</h2>
-            <div id="log-entries" class="logs"></div>
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <div class="status-box">
+                <h2>Failover Settings</h2>
+                <div class="service-details">
+                    <p><span>Primary Service:</span>
+                        <select id="setting-primary-service">
+                            <option value="newt">Newt</option>
+                            <option value="tailscale">Tailscale</option>
+                        </select>
+                    </p>
+                    <p><span>Failover Mode:</span>
+                        <select id="setting-failover-mode">
+                            <option value="immediate">Immediate</option>
+                            <option value="gradual">Gradual</option>
+                        </select>
+                    </p>
+                    <p><span>Health Check Interval (seconds):</span>
+                        <input type="number" id="setting-health-check-interval" min="1" max="60" value="10">
+                    </p>
+                    <p><span>Failure Threshold:</span>
+                        <input type="number" id="setting-failure-threshold" min="1" max="10" value="3">
+                    </p>
+                    <p><span>Recovery Threshold:</span>
+                        <input type="number" id="setting-recovery-threshold" min="1" max="10" value="5">
+                    </p>
+                </div>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button id="save-settings-button" class="control-button primary">Save Settings</button>
+                </div>
+            </div>
+
+            <div class="status-box">
+                <h2>Notification Settings</h2>
+                <div class="service-details">
+                    <p><span>Enable Notifications:</span>
+                        <input type="checkbox" id="setting-enable-notifications">
+                    </p>
+                    <p><span>Webhook URL:</span>
+                        <input type="text" id="setting-webhook-url" placeholder="https://your-webhook-url.com">
+                    </p>
+                </div>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button id="test-notification-button" class="control-button">Test Notification</button>
+                    <button id="save-notification-settings-button" class="control-button primary">Save Settings</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Failover Modal -->
+        <div id="manual-failover-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Manual Failover</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to trigger a manual failover?</p>
+                    <p>This will switch from <span id="modal-from-service">current service</span> to <span id="modal-to-service">other service</span>.</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="cancel-failover-button" class="control-button">Cancel</button>
+                    <button id="confirm-failover-button" class="control-button danger">Confirm Failover</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Newt-Tailscale Failover Gateway &copy; 2025</p>
         </div>
     </div>
 
