@@ -1,5 +1,7 @@
 # Newt-Tailscale Failover Gateway
 
+[![Discuss on the HHF forum](https://img.shields.io/badge/discuss-forum.hhf.technology-E65100?logo=discourse&logoColor=white)](https://forum.hhf.technology/c/pangolin-newt-tools/failover-newt-tc)
+
 This project provides an automatic failover solution between Newt and Tailscale. If the Newt tunnel fails, traffic is automatically redirected to Tailscale without interruption.
 
 <img src="images/image.png" alt="Preview"/>
